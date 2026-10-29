@@ -12,18 +12,9 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../styles/theme';
 
-const COLORS = {
-  primary: '#2D8060',
-  darkGreen: '#205B46',
-  background: '#F7F9F7',
-  white: '#FFFFFF',
-  heading: '#26372F',
-  body: '#718078',
-  border: '#DDE7E0',
-  lightGreen: '#E7F4EC',
-  mutedGreen: '#EFF3F0',
-};
+
 
 const initialMessages = [
   {
@@ -141,7 +132,7 @@ export default function AITutorScreen({ navigation, route }) {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor={COLORS.background}
+        backgroundColor={colors.background}
       />
 
       <KeyboardAvoidingView
@@ -170,7 +161,7 @@ export default function AITutorScreen({ navigation, route }) {
             <Ionicons
               name="ellipsis-horizontal"
               size={22}
-              color={COLORS.body}
+              color={colors.body}
             />
           </TouchableOpacity>
         </View>
@@ -180,7 +171,7 @@ export default function AITutorScreen({ navigation, route }) {
           <Ionicons
             name="book-outline"
             size={19}
-            color={COLORS.primary}
+            color={colors.primary}
           />
 
           <View style={styles.lessonInfo}>
@@ -204,7 +195,7 @@ export default function AITutorScreen({ navigation, route }) {
             <Ionicons
               name="close"
               size={17}
-              color={COLORS.body}
+              color={colors.body}
             />
           </TouchableOpacity>
         </View>
@@ -218,7 +209,7 @@ export default function AITutorScreen({ navigation, route }) {
             <Ionicons
               name="language-outline"
               size={13}
-              color={COLORS.primary}
+              color={colors.primary}
             />
 
             <Text style={styles.languageText}>
@@ -270,7 +261,7 @@ export default function AITutorScreen({ navigation, route }) {
           <TextInput
             style={styles.textInput}
             placeholder="Ask your question..."
-            placeholderTextColor={COLORS.body}
+            placeholderTextColor={colors.body}
             value={inputText}
             onChangeText={setInputText}
             multiline
@@ -290,7 +281,7 @@ export default function AITutorScreen({ navigation, route }) {
             <Ionicons
               name="arrow-up"
               size={22}
-              color={COLORS.white}
+              color={colors.white}
             />
           </TouchableOpacity>
         </View>
@@ -330,7 +321,7 @@ export default function AITutorScreen({ navigation, route }) {
                     name={item.icon}
                     size={19}
                     color={
-                      active ? COLORS.primary : COLORS.body
+                      active ? colors.primary : colors.body
                     }
                   />
                 </View>
@@ -355,7 +346,7 @@ export default function AITutorScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
 
   container: {
@@ -372,7 +363,7 @@ const styles = StyleSheet.create({
   },
 
   eyebrow: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -380,7 +371,7 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    color: COLORS.heading,
+    color: colors.heading,
     fontSize: 21,
     fontWeight: '800',
   },
@@ -392,7 +383,7 @@ const styles = StyleSheet.create({
   lessonBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.lightGreen,
+    backgroundColor: colors.lightGreen,
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -405,14 +396,14 @@ const styles = StyleSheet.create({
   },
 
   lessonEyebrow: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 9,
     fontWeight: '700',
     marginBottom: 3,
   },
 
   lessonTitle: {
-    color: COLORS.heading,
+    color: colors.heading,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -429,7 +420,7 @@ const styles = StyleSheet.create({
   languagePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.lightGreen,
+    backgroundColor: colors.lightGreen,
     borderRadius: 15,
     paddingHorizontal: 9,
     paddingVertical: 5,
@@ -437,13 +428,13 @@ const styles = StyleSheet.create({
   },
 
   languageText: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '600',
   },
 
   dateText: {
-    color: COLORS.body,
+    color: colors.body,
     fontSize: 9,
   },
 
@@ -476,29 +467,29 @@ const styles = StyleSheet.create({
   },
 
   aiBubble: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderBottomLeftRadius: 4,
   },
 
   userBubble: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderBottomRightRadius: 4,
   },
 
   messageText: {
-    color: COLORS.heading,
+    color: colors.heading,
     fontSize: 12,
     lineHeight: 18,
   },
 
   userMessageText: {
-    color: COLORS.white,
+    color: colors.white,
   },
 
   messageTime: {
-    color: COLORS.body,
+    color: colors.body,
     fontSize: 9,
     textAlign: 'right',
     marginTop: 7,
@@ -518,15 +509,15 @@ const styles = StyleSheet.create({
 
   suggestionButton: {
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     borderRadius: 18,
     paddingHorizontal: 11,
     paddingVertical: 8,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.white,
   },
 
   suggestionText: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -534,9 +525,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 15,
     marginHorizontal: 22,
     paddingLeft: 12,
@@ -547,7 +538,7 @@ const styles = StyleSheet.create({
 
   textInput: {
     flex: 1,
-    color: COLORS.heading,
+    color: colors.heading,
     fontSize: 12,
     paddingTop: 10,
     paddingBottom: 10,
@@ -558,7 +549,7 @@ const styles = StyleSheet.create({
     width: 39,
     height: 39,
     borderRadius: 12,
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 5,
@@ -569,7 +560,7 @@ const styles = StyleSheet.create({
   },
 
   disclaimer: {
-    color: COLORS.body,
+    color: colors.body,
     fontSize: 9,
     textAlign: 'center',
     marginTop: 10,
@@ -579,9 +570,9 @@ const styles = StyleSheet.create({
   bottomNavigation: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: colors.border,
     paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 8 : 10,
   },
@@ -600,17 +591,17 @@ const styles = StyleSheet.create({
   },
 
   activeNavIcon: {
-    backgroundColor: COLORS.lightGreen,
+    backgroundColor: colors.lightGreen,
   },
 
   navText: {
-    color: COLORS.body,
+    color: colors.body,
     fontSize: 9,
     marginTop: 3,
   },
 
   activeNavText: {
-    color: COLORS.darkGreen,
+    color: colors.primary,
     fontWeight: '800',
   },
 });

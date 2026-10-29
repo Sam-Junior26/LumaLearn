@@ -225,7 +225,7 @@ export default function QuizResultsScreen({ navigation, route }) {
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.85}
-            onPress={practiseLearningGap}
+            onPress={() => navigation.navigate('LearningGapDetails')}
           >
             <Text style={styles.primaryButtonText}>
               Practise my learning gap

@@ -60,7 +60,7 @@ function MenuRow({ icon, title, subtitle, onPress }) {
 function BottomNavigation({ navigation, active = 'Profile' }) {
     const tabs = [
         { label: 'Home', icon: 'home-outline', screen: 'LearnerDashboard' },
-        { label: 'Subjects', icon: 'book-outline', screen: 'SubjectsSelection' },
+        { label: 'Subjects', icon: 'book-outline', screen: 'SubjectSelection' },
         { label: 'Tutor', icon: 'sparkles-outline', screen: 'AITutor' },
         { label: 'Progress', icon: 'stats-chart-outline', screen: 'LearningProgress' },
         { label: 'Profile', icon: 'person-outline', screen: 'Profile' },
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
         color: colors.body,
     },
     activeNavLabel: {
-        color: colors.primaryDark,
+        color: colors.primary,
         fontWeight: '800',
     },
 });

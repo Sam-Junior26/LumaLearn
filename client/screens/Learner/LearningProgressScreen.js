@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   summaryCard: {
-    backgroundColor: '#205B46',
+    backgroundColor: colors.primaryDark,
     borderRadius: 19,
     padding: 16,
     marginBottom: 14,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   activeTabLabel: {
-    color: colors.primaryDark,
+    color: colors.primary,
     fontWeight: '800',
   },
 });

@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   },
 
   activeNavText: {
-    color: colors.primaryDark,
+    color: colors.primary,
     fontWeight: '800',
   },
 });
