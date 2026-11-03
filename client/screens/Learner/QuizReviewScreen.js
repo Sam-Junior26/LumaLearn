@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+import { Text } from '../../components/TText';
 
 export default function QuizReviewScreen({ navigation, route }) {
   const results = route?.params?.results || [];

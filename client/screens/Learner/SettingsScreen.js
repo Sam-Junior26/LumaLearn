@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
     Switch,
     SafeAreaView,
     StatusBar,
-    Alert,
 } from 'react-native';
+import { Text, alertT } from '../../components/TText';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
-function SettingRow({ icon, title, subtitle, onPress }) {
+function SettingRow({ icon, title, subtitle, onPress, translateSubtitle = true }) {
     return (
         <TouchableOpacity
             style={styles.settingRow}
@@ -28,7 +28,7 @@ function SettingRow({ icon, title, subtitle, onPress }) {
             <View style={styles.settingInfo}>
                 <Text style={styles.settingTitle}>{title}</Text>
                 {subtitle ? (
-                    <Text style={styles.settingSubtitle}>{subtitle}</Text>
+                    <Text translate={translateSubtitle} style={styles.settingSubtitle}>{subtitle}</Text>
                 ) : null}
             </View>
 
@@ -111,6 +111,7 @@ function BottomNavigation({ navigation, active = 'Profile' }) {
 }
 
 export default function SettingsScreen({ navigation }) {
+    const { language } = useLanguage();
 
     const [reminders, setReminders] = useState(true);
     const [dataSaver, setDataSaver] = useState(true);
@@ -119,7 +120,7 @@ export default function SettingsScreen({ navigation }) {
     const { signOut } = useAuth();
 
     const handleSignOut = () => {
-        Alert.alert(
+        alertT(
             'Log out',
             'Are you sure you want to log out?',
             [
@@ -135,7 +136,7 @@ export default function SettingsScreen({ navigation }) {
                             const { error } = await signOut();
 
                             if (error) {
-                                Alert.alert(
+                                alertT(
                                     'Logout Failed',
                                     error.message
                                 );
@@ -147,7 +148,7 @@ export default function SettingsScreen({ navigation }) {
                                 routes: [{ name: 'Welcome' }],
                             });
                         } catch (error) {
-                            Alert.alert(
+                            alertT(
                                 'Error',
                                 'Unable to log out. Please try again.'
                             );
@@ -157,8 +158,6 @@ export default function SettingsScreen({ navigation }) {
             ]
         );
     };
-
-
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -194,7 +193,8 @@ export default function SettingsScreen({ navigation }) {
                         <SettingRow
                             icon="language-outline"
                             title="App & tutor language"
-                            subtitle="English"
+                            subtitle={language.name}
+                            translateSubtitle={false}
                             onPress={() => navigation.navigate('Language')}
                         />
 
@@ -203,7 +203,7 @@ export default function SettingsScreen({ navigation }) {
                             title="Text size"
                             subtitle="Standard · Adjust for easier reading"
                             onPress={() =>
-                                Alert.alert(
+                                alertT(
                                     'Text size',
                                     'Text-size preferences can be connected to a dedicated settings screen.'
                                 )
@@ -242,7 +242,7 @@ export default function SettingsScreen({ navigation }) {
                             title="Account & password"
                             subtitle="Learner account"
                             onPress={() =>
-                                Alert.alert(
+                                alertT(
                                     'Account & password',
                                     'Connect this option to your account-management screen.'
                                 )
@@ -253,7 +253,7 @@ export default function SettingsScreen({ navigation }) {
                             icon="lock-closed-outline"
                             title="Privacy & your data"
                             onPress={() =>
-                                Alert.alert(
+                                alertT(
                                     'Privacy & your data',
                                     'Connect this option to your privacy screen.'
                                 )
@@ -264,7 +264,7 @@ export default function SettingsScreen({ navigation }) {
                             icon="help-circle-outline"
                             title="Help & support"
                             onPress={() =>
-                                Alert.alert(
+                                alertT(
                                     'Help & support',
                                     'Connect this option to your help screen.'
                                 )

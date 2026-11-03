@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -10,6 +9,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+import { Text } from '../../components/TText';
+import { useLanguage } from '../../context/LanguageContext';
 
 function FractionVisual() {
   return (
@@ -51,6 +52,7 @@ export default function LessonLearningScreen({
   navigation,
   route,
 }) {
+  const { language } = useLanguage();
   const lesson =
     route?.params?.lesson || 'Equivalent fractions';
 
@@ -118,7 +120,7 @@ export default function LessonLearningScreen({
                 color={colors.primary}
               />
 
-              <Text style={styles.languageText}>English</Text>
+              <Text translate={false} style={styles.languageText}>{language.name}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

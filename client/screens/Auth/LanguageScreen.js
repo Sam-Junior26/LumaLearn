@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Pressable,
     ScrollView,
@@ -10,55 +9,38 @@ import {
     ActivityIndicator,
 } from 'react-native';
 
+import { Text } from '../../components/TText';
 import { colors } from '../../styles/theme';
-import { supabase } from '../../config/supabase';
-
-const languages = [
-    {
-        code: 'EN',
-        name: 'English',
-        subtitle: '',
-        databaseCode: 'en',
-    },
-    {
-        code: 'ZU',
-        name: 'isiZulu',
-        subtitle: 'Zulu',
-        databaseCode: 'zu',
-    },
-    {
-        code: 'XH',
-        name: 'isiXhosa',
-        subtitle: 'Xhosa',
-        databaseCode: 'xh',
-    },
-    {
-        code: 'ST',
-        name: 'Sesotho',
-        subtitle: 'Southern Sotho',
-        databaseCode: 'st',
-    },
-    {
-        code: 'NS',
-        name: 'Sepedi',
-        subtitle: 'Northern Sotho',
-        databaseCode: 'ns',
-    },
-    {
-        code: 'AF',
-        name: 'Afrikaans',
-        subtitle: '',
-        databaseCode: 'af',
-    },
-];
+import { LANGUAGES } from '../../config/languages';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function LanguageScreen({ navigation }) {
-    const [selectedLanguage, setSelectedLanguage] = useState('EN');
+    const { user } = useAuth();
+    const { language, setLanguage } = useLanguage();
+    const [selectedLanguage, setSelectedLanguage] = useState(language.code);
     const [loading, setLoading] = useState(false);
 
-    const selected = languages.find(
-        (language) => language.code === selectedLanguage
+    const selected = LANGUAGES.find(
+        (item) => item.code === selectedLanguage
     );
+
+    function finish() {
+        if (user) {
+            // Logged in (e.g. opened from Settings): go back to where we came from.
+            if (navigation.canGoBack()) {
+                navigation.goBack();
+            } else {
+                navigation.navigate('LearnerDashboard');
+            }
+        } else {
+            // Not logged in yet: Login saves the choice to the profile.
+            navigation.navigate('Login', {
+                language: selected.name,
+                languageCode: selected.dbCode,
+            });
+        }
+    }
 
     async function handleContinue() {
         if (!selected) {
@@ -69,40 +51,18 @@ export default function LanguageScreen({ navigation }) {
         setLoading(true);
 
         try {
-            // Check whether the user is already logged in.
-            const {
-                data: { user },
-                error: authError,
-            } = await supabase.auth.getUser();
+            // Saves on this device, and to the profile when logged in.
+            // The whole app (except Login/Register) switches language immediately.
+            await setLanguage(selected.dbCode);
 
-            if (authError) {
-                throw authError;
-            }
-
-            // If the user is logged in, save the language to Supabase.
-            if (user) {
-                const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update({
-                        preferred_language: selected.databaseCode,
-                    })
-                    .eq('id', user.id);
-
-                if (updateError) {
-                    throw updateError;
-                }
-
-                navigation.navigate('Login', {
-                    language: selected.name,
-                    languageCode: selected.databaseCode,
-                });
+            if (!selected.deepl && selected.dbCode !== 'en') {
+                Alert.alert(
+                    `${selected.name} saved`,
+                    `Automatic translation isn't available for ${selected.name} yet, so the app will stay in English for now.`,
+                    [{ text: 'OK', onPress: finish }]
+                );
             } else {
-                // If the user is not logged in, pass the selection
-                // to Login so it can be saved after authentication.
-                navigation.navigate('Login', {
-                    language: selected.name,
-                    languageCode: selected.databaseCode,
-                });
+                finish();
             }
         } catch (error) {
             console.error('Language selection error:', error);
@@ -159,7 +119,7 @@ export default function LanguageScreen({ navigation }) {
 
                 {/* Language options */}
                 <View style={styles.languageList}>
-                    {languages.map((language) => {
+                    {LANGUAGES.map((language) => {
                         const isSelected =
                             selectedLanguage === language.code;
 
@@ -184,18 +144,19 @@ export default function LanguageScreen({ navigation }) {
                                         isSelected && styles.selectedCode,
                                     ]}
                                 >
-                                    <Text style={styles.codeText}>
+                                    <Text translate={false} style={styles.codeText}>
                                         {language.code}
                                     </Text>
                                 </View>
 
                                 <View style={styles.languageInfo}>
-                                    <Text style={styles.languageName}>
+                                    <Text translate={false} style={styles.languageName}>
                                         {language.name}
                                     </Text>
 
                                     {language.subtitle !== '' && (
                                         <Text
+                                            translate={false}
                                             style={
                                                 styles.languageSubtitle
                                             }

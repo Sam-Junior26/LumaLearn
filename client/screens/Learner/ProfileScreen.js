@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -11,6 +10,8 @@ import {
 import { supabase } from '../../config/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+import { Text } from '../../components/TText';
+import { useLanguage } from '../../context/LanguageContext';
 
 const learner = {
     name: 'Naledi Mokoena',
@@ -105,7 +106,7 @@ function BottomNavigation({ navigation, active = 'Profile' }) {
 }
 
 export default function ProfileScreen({ navigation }) {
-
+    const { language } = useLanguage();
     const [learnerName, setLearnerName] = useState('');
     const [learnerEmail, setLearnerEmail] = useState('');
     const [loadingName, setLoadingName] = useState(true);
@@ -285,7 +286,7 @@ export default function ProfileScreen({ navigation }) {
                         <MenuRow
                             icon="language-outline"
                             title="Language & preferences"
-                            subtitle="English · Manage in settings"
+                            subtitle={`${language.name} · Manage in settings`}
                             onPress={() => navigation.navigate('Settings')}
                         />
                     </View>

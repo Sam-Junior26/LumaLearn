@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Pressable,
     StatusBar,
@@ -12,6 +11,7 @@ import {
 import Logo from '../../components/Logo';
 import { colors } from '../../styles/theme';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Text } from '../../components/TText';
 
 export default function WelcomeScreen({ navigation }) {
     return (

@@ -255,25 +255,6 @@ export default function LoginScreen({ navigation, route }) {
                 {/* Header */}
                 <View style={styles.header}>
                     <Logo />
-
-                    <Pressable
-                        style={styles.languageButton}
-                        onPress={() =>
-                            navigation.navigate('Language')
-                        }
-                        accessibilityRole="button"
-                        accessibilityLabel="Change language"
-                    >
-                        <Image
-                            source={require('../../assets/images/globe (1).png')}
-                            style={styles.languageIcon}
-                            resizeMode="contain"
-                        />
-
-                        <Text style={styles.language}>
-                            {languageCode.toUpperCase()}
-                        </Text>
-                    </Pressable>
                 </View>
 
                 {/* Introduction */}

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+import { Text, alertT } from '../../components/TText';
 
 const questions = [
   {
@@ -134,7 +133,7 @@ export default function QuizQuestionsScreen({ navigation }) {
 
   const goToNextQuestion = () => {
     if (selectedAnswer === undefined) {
-      Alert.alert(
+      alertT.alert(
         'Choose an answer',
         'Please select an answer or skip this question.'
       );
@@ -212,7 +211,7 @@ export default function QuizQuestionsScreen({ navigation }) {
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() =>
-              Alert.alert(
+              alertT.alert(
                 'Leave quiz?',
                 'Your current answers will not be submitted unless you finish the quiz.',
                 [
