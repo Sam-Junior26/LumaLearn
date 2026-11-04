@@ -60,7 +60,7 @@ export default function App() {
             }}
           >
             <Stack.Screen name="Splash" component={SplashScreen} />
-            { /* <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Language" component={LanguageScreen} />
@@ -77,7 +77,7 @@ export default function App() {
             <Stack.Screen name="LearningProgress" component={LearningProgressScreen} />
             <Stack.Screen name="LearningGapDetails" component={LearningGapDetailsScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="Settings" component={SettingsScreen} /> */}
+            <Stack.Screen name="Settings" component={SettingsScreen} />
 
             <Stack.Screen name="TeacherDashboard" component={TeacherDashboardScreen} />
             <Stack.Screen name="TeacherLearners" component={LearnersScreen} />
