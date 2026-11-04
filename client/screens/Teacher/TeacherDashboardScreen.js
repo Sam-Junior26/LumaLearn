@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
 import { Text } from '../../components/TText';
+import TeacherBottomNav from '../../components/TeacherBottomNav';
 
 const learnersNeedingSupport = [
   {
@@ -36,49 +37,6 @@ function MetricCard({ icon, value, label }) {
   );
 }
 
-function BottomNavigation({ navigation, active = 'Home' }) {
-  const tabs = [
-    { label: 'Home', icon: 'home-outline', screen: 'TeacherDashboard' },
-    { label: 'Learners', icon: 'people-outline', screen: 'Learners' },
-    { label: 'Gaps', icon: 'analytics-outline', screen: 'LearningGaps' },
-    { label: 'Reports', icon: 'document-text-outline', screen: 'TeacherReports' },
-    { label: 'Settings', icon: 'settings-outline', screen: 'TeacherSettings' },
-  ];
-
-  return (
-    <View style={styles.bottomNav}>
-      {tabs.map((tab) => {
-        const selected = active === tab.label;
-
-        return (
-          <TouchableOpacity
-            key={tab.label}
-            style={styles.navItem}
-            onPress={() => navigation.navigate(tab.screen)}
-          >
-            <View style={[styles.navIcon, selected && styles.activeNavIcon]}>
-              <Ionicons
-                name={tab.icon}
-                size={18}
-                color={selected ? colors.primary : colors.body}
-              />
-            </View>
-
-            <Text
-              style={[
-                styles.navLabel,
-                selected && styles.activeNavLabel,
-              ]}
-            >
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
 export default function TeacherDashboardScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -93,10 +51,25 @@ export default function TeacherDashboardScreen({ navigation }) {
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.header}>
-            <View>
-              <Text style={styles.eyebrow}>TEACHER WORKSPACE</Text>
-              <Text style={styles.pageTitle}>Morning, Ms Dlamini</Text>
+
+            <View style={styles.logoContainer}>
+              <View style={styles.logoIcon}>
+                <Ionicons
+                  name="book"
+                  size={25}
+                  color={colors.white}
+                />
+              </View>
+
+              <View>
+                <Text style={styles.logoText}>LumaLearn</Text>
+                <Text style={styles.logoSubtitle}>
+                  TEACHER WORKSPACE
+                </Text>
+              </View>
             </View>
+
+
 
             <TouchableOpacity
               style={styles.notificationButton}
@@ -110,10 +83,17 @@ export default function TeacherDashboardScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
+          {/* Greeting */}
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greeting}>
+              Morning, Ms Dlamini
+            </Text>
+          </View>
+
           <TouchableOpacity
             style={styles.classSelector}
             onPress={() =>
-              navigation.navigate('ClassSelection')
+              navigation.navigate('SchoolClassesSettings')
             }
           >
             <Ionicons
@@ -172,7 +152,7 @@ export default function TeacherDashboardScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.focusLink}
-              onPress={() => navigation.navigate('LearningGaps')}
+              onPress={() => navigation.navigate('TeacherGaps')}
             >
               <Text style={styles.focusLinkText}>
                 Explore learning gaps
@@ -185,6 +165,35 @@ export default function TeacherDashboardScreen({ navigation }) {
               />
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity
+            style={styles.createGroupCard}
+            onPress={() => navigation.navigate('CreateGroup')}
+          >
+            <View style={styles.createGroupIcon}>
+              <Ionicons
+                name="people-outline"
+                size={22}
+                color={colors.primary}
+              />
+            </View>
+
+            <View style={styles.createGroupInfo}>
+              <Text style={styles.createGroupTitle}>
+                Create Learning Group
+              </Text>
+
+              <Text style={styles.createGroupSubtitle}>
+                Group learners and assign activities together.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>A little extra support</Text>
@@ -203,10 +212,10 @@ export default function TeacherDashboardScreen({ navigation }) {
                 style={[
                   styles.learnerRow,
                   index !== learnersNeedingSupport.length - 1 &&
-                    styles.learnerDivider,
+                  styles.learnerDivider,
                 ]}
                 onPress={() =>
-                  navigation.navigate('LearnerDetails', {
+                  navigation.navigate('TeacherLearnerDetails', {
                     learner,
                   })
                 }
@@ -270,7 +279,10 @@ export default function TeacherDashboardScreen({ navigation }) {
           </TouchableOpacity>
         </ScrollView>
 
-        <BottomNavigation navigation={navigation} active="Home" />
+        <TeacherBottomNav
+          navigation={navigation}
+          active="home"
+        />
       </View>
     </SafeAreaView>
   );
@@ -295,17 +307,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  eyebrow: {
-    color: colors.primary,
-    fontSize: 9,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  pageTitle: {
-    color: colors.heading,
-    fontSize: 20,
-    fontWeight: '800',
-  },
+
   notificationButton: {
     width: 38,
     height: 38,
@@ -390,6 +392,42 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
+  createGroupCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 13,
+    marginBottom: 19,
+    gap: 11,
+  },
+
+  createGroupIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: colors.lightGreen,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  createGroupInfo: {
+    flex: 1,
+  },
+
+  createGroupTitle: {
+    color: colors.heading,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  createGroupSubtitle: {
+    color: colors.body,
+    fontSize: 10,
+    marginTop: 4,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -401,6 +439,45 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+  },
+
+  logoIcon: {
+    width: 43,
+    height: 43,
+    borderRadius: 13,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  logoText: {
+    color: colors.heading,
+    fontSize: 21,
+    fontWeight: '800',
+  },
+
+  logoSubtitle: {
+    color: colors.primary,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    marginTop: 2,
+  },
+  greetingContainer: {
+    marginBottom: 18,
+  },
+
+  greeting: {
+    fontSize: 25,
+    fontWeight: '800',
+    color: colors.heading,
+    marginBottom: 5,
+  },
+
   viewAll: {
     color: colors.primary,
     fontSize: 10,
