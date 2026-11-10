@@ -85,6 +85,7 @@ export default function LoginScreen({ navigation, route }) {
                 .single();
 
             if (profileError || !profile) {
+
                 // Avoid leaving an authenticated user without a profile.
                 await supabase.auth.signOut();
 
@@ -95,7 +96,26 @@ export default function LoginScreen({ navigation, route }) {
 
             // 3. Verify account status.
             if (profile.account_status !== 'active') {
+
                 await supabase.auth.signOut();
+
+                if (
+                    profile.role === 'teacher' &&
+                    profile.account_status === 'pending'
+                ) {
+                    throw new Error(
+                        'Your teacher registration has been received. Please wait for an administrator to approve your account. You will be able to access the teacher dashboard once it is approved.'
+                    );
+                }
+
+                if (
+                    profile.role === 'teacher' &&
+                    profile.account_status === 'rejected'
+                ) {
+                    throw new Error(
+                        'Your teacher registration was not approved. Please contact the LumaLearn administrator for more information.'
+                    );
+                }
 
                 throw new Error(
                     'Your account is not active. Please contact your administrator.'
@@ -103,10 +123,17 @@ export default function LoginScreen({ navigation, route }) {
             }
 
             // 4. Verify that the selected role matches the database role.
-            const expectedRole =
-                role === 'Learner' ? 'learner' : 'teacher';
+            const roleMatches =
+                role === 'Learner'
+                    ? profile.role === 'learner'
+                    : role === 'Teacher'
+                        ? profile.role === 'teacher'
+                        : ['admin', 'administrator'].includes(
+                            String(profile.role).toLowerCase()
+                        );
 
-            if (profile.role !== expectedRole) {
+            if (!roleMatches) {
+
                 await supabase.auth.signOut();
 
                 throw new Error(
@@ -115,9 +142,9 @@ export default function LoginScreen({ navigation, route }) {
             }
 
             // 5. Save the language selected on the Language screen.
-            // If the user did not arrive with a language selection,
-            // preserve their existing saved language.
+            // Preserve the existing language if no new selection was passed.
             if (route?.params?.languageCode) {
+
                 const { error: languageError } = await supabase
                     .from('profiles')
                     .update({
@@ -130,14 +157,12 @@ export default function LoginScreen({ navigation, route }) {
                         'Could not update preferred language:',
                         languageError
                     );
-
-                    // Login can continue if only saving the language fails.
-                    // The existing profile language remains unchanged.
                 }
             }
 
             // 6. Navigate according to the user's verified role.
             if (profile.role === 'learner') {
+
                 navigation.reset({
                     index: 0,
                     routes: [
@@ -146,7 +171,9 @@ export default function LoginScreen({ navigation, route }) {
                         },
                     ],
                 });
+
             } else if (profile.role === 'teacher') {
+
                 navigation.reset({
                     index: 0,
                     routes: [
@@ -155,14 +182,32 @@ export default function LoginScreen({ navigation, route }) {
                         },
                     ],
                 });
+
+            } else if (
+                profile.role === 'admin' ||
+                profile.role === 'administrator'
+            ) {
+
+                navigation.reset({
+                    index: 0,
+                    routes: [
+                        {
+                            name: 'AdminTeacherApprovals',
+                        },
+                    ],
+                });
+
             } else {
+
                 await supabase.auth.signOut();
 
                 throw new Error(
                     'Your account role is not supported by this app.'
                 );
             }
+
         } catch (loginError) {
+
             console.error('Login error:', loginError);
 
             const message =
@@ -174,18 +219,21 @@ export default function LoginScreen({ navigation, route }) {
                 setError(
                     'Incorrect email address or password. Please try again.'
                 );
+
             } else if (
                 message.includes('email not confirmed')
             ) {
                 setError(
                     'Please confirm your email address before logging in.'
                 );
+
             } else {
                 setError(
                     loginError.message ||
                     'Login failed. Please try again.'
                 );
             }
+
         } finally {
             setLoading(false);
         }
@@ -199,10 +247,15 @@ export default function LoginScreen({ navigation, route }) {
             return;
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
+        const normalizedEmail =
+            email.trim().toLowerCase();
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!normalizedEmail || !emailRegex.test(normalizedEmail)) {
+        if (
+            !normalizedEmail ||
+            !emailRegex.test(normalizedEmail)
+        ) {
             setError(
                 'Enter your email address above before resetting your password.'
             );
@@ -225,7 +278,9 @@ export default function LoginScreen({ navigation, route }) {
                 'Check your email',
                 'If an account exists for this email address, Supabase will send a password reset link. Follow the instructions in the email.'
             );
+
         } catch (resetError) {
+
             console.error(
                 'Password reset error:',
                 resetError
@@ -235,6 +290,7 @@ export default function LoginScreen({ navigation, route }) {
                 resetError.message ||
                 'Unable to request a password reset. Please try again.'
             );
+
         } finally {
             setResetLoading(false);
         }
@@ -242,6 +298,7 @@ export default function LoginScreen({ navigation, route }) {
 
     return (
         <View style={styles.container}>
+
             <StatusBar
                 barStyle="dark-content"
                 backgroundColor={colors.screenBackground}
@@ -252,6 +309,7 @@ export default function LoginScreen({ navigation, route }) {
                 contentContainerStyle={styles.content}
                 keyboardShouldPersistTaps="handled"
             >
+
                 {/* Header */}
                 <View style={styles.header}>
                     <Logo />
@@ -272,7 +330,7 @@ export default function LoginScreen({ navigation, route }) {
                 <Text style={styles.label}>I am a</Text>
 
                 <View style={styles.roleContainer}>
-                    {['Learner', 'Teacher'].map((item) => (
+                    {['Learner', 'Teacher', 'Administrator'].map((item) => (
                         <Pressable
                             key={item}
                             style={[
@@ -452,44 +510,53 @@ export default function LoginScreen({ navigation, route }) {
                         A safe space to learn and ask questions.
                     </Text>
                 </View>
+
             </ScrollView>
 
             <View style={styles.homeIndicator} />
+
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         backgroundColor: colors.screenBackground,
     },
+
     content: {
         paddingHorizontal: 20,
         paddingTop: 42,
         paddingBottom: 40,
     },
+
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 38,
     },
+
     languageButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 5,
     },
+
     language: {
         color: colors.heading,
         fontSize: 13,
         fontWeight: '500',
     },
+
     languageIcon: {
         width: 14,
         height: 14,
     },
+
     heading: {
         color: colors.heading,
         fontSize: 26,
@@ -497,12 +564,14 @@ const styles = StyleSheet.create({
         letterSpacing: -0.6,
         marginBottom: 8,
     },
+
     description: {
         color: colors.body,
         fontSize: 13,
         lineHeight: 19,
         marginBottom: 18,
     },
+
     label: {
         color: colors.heading,
         fontSize: 13,
@@ -510,6 +579,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         marginTop: 13,
     },
+
     roleContainer: {
         height: 45,
         width: '100%',
@@ -519,6 +589,7 @@ const styles = StyleSheet.create({
         padding: 4,
         marginBottom: 5,
     },
+
     roleButton: {
         flex: 1,
         alignItems: 'center',
@@ -526,17 +597,21 @@ const styles = StyleSheet.create({
         height: 37,
         borderRadius: 10,
     },
+
     activeRole: {
         backgroundColor: colors.white,
     },
+
     roleText: {
         color: '#718078',
         fontSize: 13,
     },
+
     activeRoleText: {
         color: colors.primaryDark,
         fontWeight: '700',
     },
+
     inputContainer: {
         minHeight: 52,
         width: '100%',
@@ -548,21 +623,25 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         paddingHorizontal: 12,
     },
+
     inputIcon: {
         marginRight: 10,
         height: 19,
         width: 19,
     },
+
     input: {
         flex: 1,
         height: 52,
         color: colors.heading,
         fontSize: 13,
     },
+
     eyeIcon: {
         paddingLeft: 8,
         paddingVertical: 8,
     },
+
     forgotContainer: {
         alignSelf: 'flex-end',
         justifyContent: 'center',
@@ -572,16 +651,19 @@ const styles = StyleSheet.create({
         minHeight: 18,
         minWidth: 120,
     },
+
     forgotText: {
         color: colors.primary,
         fontSize: 13,
         fontWeight: '600',
     },
+
     errorText: {
         color: '#B42318',
         fontSize: 12,
         marginBottom: 10,
     },
+
     primaryButton: {
         minHeight: 52,
         borderRadius: 14,
@@ -590,30 +672,36 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+
     primaryButtonText: {
         color: colors.white,
         fontSize: 15,
         fontWeight: '700',
     },
+
     arrow: {
         color: colors.white,
         fontSize: 22,
         marginLeft: 10,
     },
+
     registerLink: {
         alignItems: 'center',
         marginTop: 24,
         minHeight: 18,
     },
+
     registerText: {
         color: colors.primary,
         fontSize: 13,
         fontWeight: '600',
     },
+
     mutedText: {
         color: colors.body,
         fontWeight: '400',
     },
+
     footerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -621,15 +709,18 @@ const styles = StyleSheet.create({
         marginTop: 22,
         gap: 7,
     },
+
     footer: {
         color: colors.body,
         fontSize: 13,
         textAlign: 'center',
     },
+
     footerIcon: {
         width: 14,
         height: 14,
     },
+
     homeIndicator: {
         position: 'absolute',
         bottom: 8,
@@ -639,4 +730,5 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         backgroundColor: colors.heading,
     },
+
 });

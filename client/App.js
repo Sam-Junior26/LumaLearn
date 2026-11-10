@@ -41,6 +41,7 @@ import SchoolClassesSettingsScreen from './screens/Teacher/SchoolClassesSettings
 import AccountPasswordSettingsScreen from './screens/Teacher/AccountPasswordSettingsScreen';
 import PrivacySettingsScreen from './screens/Teacher/PrivacySettingsScreen';
 import HelpSupportSettingsScreen from './screens/Teacher/HelpSupportSettingsScreen';
+import AdminTeacherApprovalsScreen from './screens/Admin/AdminTeacherApprovalsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -93,6 +94,7 @@ export default function App() {
             <Stack.Screen name="AccountPasswordSettings" component={AccountPasswordSettingsScreen} />
             <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
             <Stack.Screen name="HelpSupportSettings" component={HelpSupportSettingsScreen} />
+            <Stack.Screen name="AdminTeacherApprovals" component={AdminTeacherApprovalsScreen}/>
           </Stack.Navigator>
         </NavigationContainer>
       </LanguageProvider>

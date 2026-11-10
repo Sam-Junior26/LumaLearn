@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 import {
@@ -39,17 +40,13 @@ export default function RegisterScreen({ navigation }) {
     async function handleRegister() {
         setError('');
 
-        if (loading) {
-            return;
-        }
+        if (loading) return;
 
-        // Validate required fields.
         if (!fullName.trim() || !email.trim() || !password) {
             setError('Please complete all required fields.');
             return;
         }
 
-        // Validate email.
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!emailRegex.test(email.trim())) {
@@ -57,47 +54,35 @@ export default function RegisterScreen({ navigation }) {
             return;
         }
 
-        // validate phone number
         const phoneRegex = /^0[6-8][0-9]{8}$/;
 
-        if (!phoneRegex.test(phoneNumber)) {
+        if (!phoneRegex.test(phoneNumber.trim())) {
             setError('Please enter a valid 10-digit South African phone number.');
             return;
         }
 
-        // Validate password.
+        if (role === 'Teacher' && !schoolName.trim()) {
+            setError('Please enter your school name.');
+            return;
+        }
+
         if (password.length < 8 || !/\d/.test(password)) {
-            setError(
-                'Use at least 8 characters, including a number.'
-            );
+            setError('Use at least 8 characters, including a number.');
             return;
         }
 
-        // Validate terms.
         if (!acceptedTerms) {
-            setError(
-                'Please agree to the terms and privacy policy.'
-            );
+            setError('Please agree to the terms and privacy policy.');
             return;
         }
-
-        // Users cannot assign themselves privileged roles.
-        /*if (role === 'Teacher') {
-            setError(
-                'Teacher accounts require administrator approval. ' +
-                'Please register as a learner or contact your administrator.'
-            );
-            return;
-        }*/
 
         try {
             setLoading(true);
 
-            // Create the user in Supabase Authentication.
             const { data, error: signUpError } =
                 await supabase.auth.signUp({
                     email: email.trim().toLowerCase(),
-                    password: password,
+                    password,
 
                     options: {
                         data: {
@@ -105,14 +90,12 @@ export default function RegisterScreen({ navigation }) {
                             school_name: schoolName.trim(),
                             phone_number: phoneNumber.trim(),
                             preferred_language: languageCode,
-                            role: role.toLocaleLowerCase()
+                            role: role.toLowerCase(),
                         },
                     },
                 });
 
-            if (signUpError) {
-                throw signUpError;
-            }
+            if (signUpError) throw signUpError;
 
             if (!data.user) {
                 throw new Error(
@@ -120,33 +103,24 @@ export default function RegisterScreen({ navigation }) {
                 );
             }
 
-            /*
-             * Your Supabase handle_new_user() trigger should create
-             * the corresponding public.profiles record.
-             *
-             * It must read:
-             * full_name
-             * preferred_language
-             *
-             * from the user's authentication metadata.
-             */
+            // Teacher registration requires administrator approval.
+            if (role === 'Teacher') {
 
-            if (!data.session) {
+                // Do not leave a newly registered teacher signed in.
+                if (data.session) {
+                    await supabase.auth.signOut();
+                }
+
                 Alert.alert(
-                    role === 'Teacher'
-                        ? 'Teacher Registration Submitted'
-                        : 'Registration Successful',
-
-                    role === 'Teacher'
-                        ? 'Your teacher account has been created and is awaiting administrator approval. Please confirm your email before logging in.'
-                        : 'Your learner account has been created. Please check your email to confirm your account.',
-
+                    'Teacher registration submitted',
+                    'Your details have been saved. Your account is pending administrator approval. You can sign in after an administrator accepts your registration.',
                     [
                         {
                             text: 'OK',
-                            onPress: () => navigation.navigate('Login', {
-                                languageCode: languageCode,
-                            }),
+                            onPress: () =>
+                                navigation.navigate('Login', {
+                                    languageCode,
+                                }),
                         },
                     ]
                 );
@@ -154,10 +128,20 @@ export default function RegisterScreen({ navigation }) {
                 return;
             }
 
-            if (role === 'Teacher') {
+            // Learner registration.
+            if (!data.session) {
                 Alert.alert(
-                    'Registration Submitted',
-                    'Your teacher account is awaiting administrator approval.'
+                    'Check your email',
+                    'Your learner account has been created. Please confirm your email address before logging in.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () =>
+                                navigation.navigate('Login', {
+                                    languageCode,
+                                }),
+                        },
+                    ]
                 );
 
                 return;
@@ -165,71 +149,30 @@ export default function RegisterScreen({ navigation }) {
 
             navigation.reset({
                 index: 0,
-                routes: [{ name: 'TeacherDashboard' }],
+                routes: [{ name: 'LearnerDashboard' }],
             });
 
-            if (!data.session) {
-                // Email confirmation is enabled in Supabase.
-                Alert.alert(
-                    'Check your email',
-                    'Your account has been created. Please check your email ' +
-                    'to confirm your account before logging in.',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                navigation.navigate('Login', {
-                                    language: route.params?.language,
-                                    languageCode: languageCode,
-                                });
-                            },
-                        },
-                    ]
-                );
+        } catch (registerError) {
+            console.error('Registration error:', registerError);
 
-                return;
-            }
-
-            // Account created and user signed in.
-            Alert.alert(
-                'Registration successful',
-                'Welcome to Thuto AI! Your account has been created.',
-                [
-                    {
-                        text: 'Continue',
-                        onPress: () => {
-                            navigation.reset({
-                                index: 0,
-                                routes: [
-                                    {
-                                        name: 'LearnerDashboard',
-                                    },
-                                ],
-                            });
-                        },
-                    },
-                ]
-            );
-        } catch (error) {
-            console.error('Registration error:', error);
-
-            const errorMessage =
-                error.message?.toLowerCase() || '';
+            const message =
+                registerError.message?.toLowerCase() || '';
 
             if (
-                errorMessage.includes('already registered') ||
-                errorMessage.includes('already exists') ||
-                errorMessage.includes('user already registered')
+                message.includes('already registered') ||
+                message.includes('already exists') ||
+                message.includes('user already registered')
             ) {
                 setError(
                     'An account with this email already exists. Please log in.'
                 );
             } else {
                 setError(
-                    error.message ||
+                    registerError.message ||
                     'Registration failed. Please try again.'
                 );
             }
+
         } finally {
             setLoading(false);
         }
@@ -237,6 +180,7 @@ export default function RegisterScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
+
             <StatusBar
                 barStyle="dark-content"
                 backgroundColor={colors.screenBackground}
@@ -247,6 +191,7 @@ export default function RegisterScreen({ navigation }) {
                 contentContainerStyle={styles.content}
                 keyboardShouldPersistTaps="handled"
             >
+
                 <View style={styles.logoRow}>
                     <Logo />
                 </View>
@@ -307,7 +252,7 @@ export default function RegisterScreen({ navigation }) {
                     />
                 </View>
 
-                {/*School name*/}
+                {/* School name */}
                 <Text style={styles.label}>School name</Text>
 
                 <View style={styles.inputContainer}>
@@ -315,7 +260,7 @@ export default function RegisterScreen({ navigation }) {
                         name="school-outline"
                         size={17}
                         style={styles.inputIcon}
-                        color={'gray'}
+                        color="gray"
                     />
 
                     <TextInput
@@ -329,14 +274,14 @@ export default function RegisterScreen({ navigation }) {
                     />
                 </View>
 
-                {/*Phone number*/}
+                {/* Phone number */}
                 <Text style={styles.label}>Phone number</Text>
 
                 <View style={styles.inputContainer}>
                     <Ionicons
                         name="call-outline"
                         size={17}
-                        color={'gray'}
+                        color="gray"
                         style={styles.inputIcon}
                     />
 
@@ -477,7 +422,7 @@ export default function RegisterScreen({ navigation }) {
                     onPress={() =>
                         navigation.navigate('Login', {
                             language: route.params?.language,
-                            languageCode: languageCode,
+                            languageCode,
                         })
                     }
                 >
@@ -488,26 +433,32 @@ export default function RegisterScreen({ navigation }) {
                         Log in
                     </Text>
                 </Pressable>
+
             </ScrollView>
 
             <View style={styles.homeIndicator} />
+
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         backgroundColor: colors.screenBackground,
     },
+
     content: {
         paddingHorizontal: 20,
         paddingTop: 42,
         paddingBottom: 40,
     },
+
     logoRow: {
         marginBottom: 21,
     },
+
     heading: {
         color: colors.heading,
         fontSize: 28,
@@ -515,12 +466,14 @@ const styles = StyleSheet.create({
         letterSpacing: -0.6,
         marginBottom: 5,
     },
+
     description: {
         color: colors.body,
         fontSize: 14,
         lineHeight: 18,
         marginBottom: 19,
     },
+
     roleContainer: {
         flexDirection: 'row',
         backgroundColor: colors.mutedGreen,
@@ -530,6 +483,7 @@ const styles = StyleSheet.create({
         height: 45,
         width: '100%',
     },
+
     roleButton: {
         flex: 1,
         height: 37,
@@ -537,17 +491,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 9,
     },
+
     activeRole: {
         backgroundColor: colors.white,
     },
+
     roleText: {
         color: '#718078',
         fontSize: 13,
     },
+
     activeRoleText: {
         color: colors.primaryDark,
         fontWeight: '700',
     },
+
     label: {
         color: colors.heading,
         fontSize: 13,
@@ -555,6 +513,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
         marginBottom: 7,
     },
+
     inputContainer: {
         height: 52,
         flexDirection: 'row',
@@ -565,32 +524,38 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         paddingHorizontal: 12,
     },
+
     inputIcon: {
         width: 17,
         height: 17,
         marginRight: 10,
     },
+
     input: {
         flex: 1,
         height: '100%',
         fontSize: 14,
         color: colors.heading,
     },
+
     eyeIcon: {
         paddingLeft: 8,
         paddingVertical: 8,
     },
+
     hint: {
         color: colors.body,
         fontSize: 11,
         marginTop: 7,
     },
+
     termsContainer: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         marginTop: 17,
         marginBottom: 13,
     },
+
     checkbox: {
         width: 20,
         height: 20,
@@ -601,26 +566,31 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+
     checkedCheckbox: {
         backgroundColor: colors.primary,
         borderColor: colors.primary,
     },
+
     checkmark: {
         color: colors.white,
         fontSize: 12,
         fontWeight: '800',
     },
+
     termsText: {
         flex: 1,
         color: colors.body,
         fontSize: 11,
         lineHeight: 13,
     },
+
     errorText: {
         color: '#B42318',
         fontSize: 12,
         marginBottom: 10,
     },
+
     primaryButton: {
         height: 52,
         borderRadius: 14,
@@ -629,29 +599,35 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexDirection: 'row',
     },
+
     primaryButtonText: {
         color: colors.white,
         fontSize: 15,
         fontWeight: '700',
     },
+
     arrow: {
         color: colors.white,
         fontSize: 22,
         marginLeft: 10,
     },
+
     loginLink: {
         alignItems: 'center',
         marginTop: 14,
     },
+
     loginText: {
         color: colors.primary,
         fontSize: 13,
         fontWeight: '600',
     },
+
     mutedText: {
         color: colors.body,
         fontWeight: '400',
     },
+
     homeIndicator: {
         position: 'absolute',
         bottom: 8,
@@ -661,5 +637,5 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         backgroundColor: colors.heading,
     },
-});
 
+});
