@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
 
-export default function AdminTeacherApprovalsScreen({ navigation }) {
+export default function AdminDashboardScreen({ navigation }) {
     const { user, signOut } = useAuth();
 
     const [teachers, setTeachers] = useState([]);

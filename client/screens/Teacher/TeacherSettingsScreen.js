@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   View,
@@ -16,6 +16,7 @@ import { alertT } from '../../components/TText';
 import { Ionicons } from '@expo/vector-icons';
 import TeacherBottomNav from '../../components/TeacherBottomNav';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../config/supabase';
 import { colors } from '../../styles/theme';
 
 function SettingsRow({
@@ -92,50 +93,185 @@ function ToggleRow({
 }
 
 export default function TeacherSettingsScreen({ navigation }) {
+
   const [weeklySummary, setWeeklySummary] = useState(true);
   const [dataSaver, setDataSaver] = useState(true);
 
+  const [TeacherName, setTeacherName] = useState('');
+  const [TeacherEmail, setTeacherEmail] = useState('');
+  const [SchoolName, setSchoolName] = useState('')
+  const [loadingSchoolName, setLoadingSchoolName] = useState(true)
+  const [loadingName, setLoadingName] = useState(true);
+  const [loadingEmail, setLoadingEmail] = useState(true);
+
+  useEffect(() => {
+    fetchTeacherName();
+    fetchTeacherEmail();
+    fetchSchoolName();
+  }, []);
+
+  const fetchTeacherName = async () => {
+    try {
+      // Get the currently logged-in user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        setTeacherName('Learner');
+        return;
+      }
+
+      // Retrieve the teacher's full name from the profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Display the full name
+      if (profile?.full_name) {
+        setTeacherName(profile.full_name.trim());
+      } else {
+        setTeacherName('Teacher');
+      }
+
+    } catch (error) {
+      console.error('Error fetching teacher name:', error.message);
+      setTeacherName('Teacher');
+    } finally {
+      setLoadingName(false);
+    }
+  };
+
+  const getInitials = (fullName) => {
+    if (!fullName) return 'L';
+
+    return fullName
+      .trim()
+      .split(/\s+/)
+      .map(name => name[0].toUpperCase())
+      .slice(0, 2)
+      .join('');
+  };
+
+  const fetchTeacherEmail = async () => {
+    try {
+      const {
+        data: { user },
+        error
+      } = await supabase.auth.getUser();
+
+      if (error) {
+        throw error;
+      }
+
+      if (user) {
+        setTeacherEmail(user.email || '');
+      } else {
+        setTeacherEmail('');
+      }
+    } catch (error) {
+      console.error('Error fetching learner email:', error.message);
+      setTeacherEmail('');
+    } finally {
+      setLoadingEmail(false)
+    }
+  };
+
+  const fetchSchoolName = async () => {
+    try {
+      // Get the currently logged-in user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        setSchoolName('Learner');
+        return;
+      }
+
+      // Retrieve the school full name from the profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('school_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Display the full name
+      if (profile?.school_name) {
+        setSchoolName(profile.school_name.trim());
+      } else {
+        setSchoolName('School');
+      }
+
+    } catch (error) {
+      console.error('Error fetching school name:', error.message);
+      setSchoolName('School');
+    } finally {
+      setLoadingSchoolName(false);
+    }
+  };
+
   const { signOut } = useAuth();
-  
-      const handleLogOut = () => {
-          alertT(
-              'Log out',
-              'Are you sure you want to log out?',
-              [
-                  {
-                      text: 'Cancel',
-                      style: 'cancel',
-                  },
-                  {
-                      text: 'Log out',
-                      style: 'destructive',
-                      onPress: async () => {
-                          try {
-                              const { error } = await signOut();
-  
-                              if (error) {
-                                  alertT(
-                                      'Logout Failed',
-                                      error.message
-                                  );
-                                  return;
-                              }
-  
-                              navigation.reset({
-                                  index: 0,
-                                  routes: [{ name: 'Welcome' }],
-                              });
-                          } catch (error) {
-                              alertT(
-                                  'Error',
-                                  'Unable to log out. Please try again.'
-                              );
-                          }
-                      },
-                  },
-              ]
-          );
-      };
+
+  const handleLogOut = () => {
+    alertT(
+      'Log out',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Log out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await signOut();
+
+              if (error) {
+                alertT(
+                  'Logout Failed',
+                  error.message
+                );
+                return;
+              }
+
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Welcome' }],
+              });
+            } catch (error) {
+              alertT(
+                'Error',
+                'Unable to log out. Please try again.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const showMessage = (title) => {
     Alert.alert(title, `Your ${title.toLowerCase()} settings will be available here.`);
@@ -166,17 +302,17 @@ export default function TeacherSettingsScreen({ navigation }) {
           <View style={styles.profileRow}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
-                TD
+                {getInitials(TeacherName)}
               </Text>
             </View>
 
             <View style={styles.profileInfo}>
               <Text style={styles.teacherName}>
-                Thandi Dlamini
+                {loadingName ? '...' : TeacherName}
               </Text>
 
               <Text style={styles.email}>
-                t.dlamini@siyakhulu.ac.za
+                {loadingEmail ? '...' : TeacherEmail}
               </Text>
 
               <View style={styles.roleBadge}>
@@ -192,7 +328,7 @@ export default function TeacherSettingsScreen({ navigation }) {
             <SettingsRow
               icon="school-outline"
               title="My school & classes"
-              subtitle="Siyakhula Secondary · Grade 7A"
+              subtitle={`${loadingSchoolName ? '...' : SchoolName} · Grade 7A`}
               onPress={() => navigation.navigate('SchoolClassesSettings')}
             />
 

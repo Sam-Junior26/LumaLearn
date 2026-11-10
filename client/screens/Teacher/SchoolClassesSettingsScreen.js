@@ -1,12 +1,65 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   SafeAreaView, ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+import { supabase } from '../../config/supabase';
 
 export default function SchoolClassesSettingsScreen({ navigation }) {
+
+  const [SchoolName, setSchoolName] = useState('')
+  const [loadingScoolName, setLoadingSchoolName] = useState(true)
+
+  useEffect(() => {
+    fetchSchoolName()
+  }, [])
+
+  const fetchSchoolName = async () => {
+      try {
+        // Get the currently logged-in user
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+  
+        if (userError) {
+          throw userError;
+        }
+  
+        if (!user) {
+          setSchoolName('Learner');
+          return;
+        }
+  
+        // Retrieve the school full name from the profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('school_name')
+          .eq('id', user.id)
+          .single();
+  
+        if (profileError) {
+          throw profileError;
+        }
+  
+        // Display the full name
+        if (profile?.school_name) {
+          setSchoolName(profile.school_name.trim());
+        } else {
+          setSchoolName('School');
+        }
+  
+      } catch (error) {
+        console.error('Error fetching school name:', error.message);
+        setSchoolName('School');
+      } finally {
+        setLoadingSchoolName(false);
+      }
+    };
+
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -19,7 +72,7 @@ export default function SchoolClassesSettingsScreen({ navigation }) {
 
         <View style={styles.card}>
           <Text style={styles.label}>SCHOOL</Text>
-          <Text style={styles.value}>Siyakuthula Secondary</Text>
+          <Text style={styles.value}>{loadingScoolName ? '...' : SchoolName}</Text>
           <Text style={styles.muted}>South Africa</Text>
         </View>
 

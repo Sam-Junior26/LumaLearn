@@ -172,28 +172,28 @@ export default function ProfileScreen({ navigation }) {
     };
 
     const fetchLearnerEmail = async () => {
-    try {
-        const {
-            data: { user },
-            error
-        } = await supabase.auth.getUser();
+        try {
+            const {
+                data: { user },
+                error
+            } = await supabase.auth.getUser();
 
-        if (error) {
-            throw error;
-        }
+            if (error) {
+                throw error;
+            }
 
-        if (user) {
-            setLearnerEmail(user.email || '');
-        } else {
+            if (user) {
+                setLearnerEmail(user.email || '');
+            } else {
+                setLearnerEmail('');
+            }
+        } catch (error) {
+            console.error('Error fetching learner email:', error.message);
             setLearnerEmail('');
+        } finally {
+            setLoadingEmail(false)
         }
-    } catch (error) {
-        console.error('Error fetching learner email:', error.message);
-        setLearnerEmail('');
-    } finally {
-        setLoadingEmail(false)
-    }
-};
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>

@@ -103,6 +103,18 @@ export default function DashboardScreen({ navigation }) {
         }
     };
 
+    const getGreeting = () => {
+        const currentHour = new Date().getHours();
+
+        if (currentHour < 12) {
+            return 'Good morning';
+        } else if (currentHour < 18) {
+            return 'Good afternoon';
+        } else {
+            return 'Good evening';
+        }
+    };
+
     const renderSubject = (subject) => (
         <TouchableOpacity
             key={subject.name}
@@ -224,8 +236,9 @@ export default function DashboardScreen({ navigation }) {
 
                 {/* Greeting */}
                 <View style={styles.greetingContainer}>
+
                     <Text style={styles.greeting}>
-                        Hello, {loadingName ? '...' : learnerName}
+                        {getGreeting()}, {loadingName ? '...' : learnerName}
                     </Text>
 
                     <Text style={styles.greetingSubtitle}>

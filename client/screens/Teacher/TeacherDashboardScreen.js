@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
 import { Text } from '../../components/TText';
+import { supabase } from '../../config/supabase';
 import TeacherBottomNav from '../../components/TeacherBottomNav';
 
 const learnersNeedingSupport = [
@@ -38,6 +39,115 @@ function MetricCard({ icon, value, label }) {
 }
 
 export default function TeacherDashboardScreen({ navigation }) {
+
+  const [TeacherName, setTeacherName] = useState('');
+  const [SchoolName, setSchoolName] = useState('')
+  const [loadingSchoolName, setLoadingSchoolName] = useState(true)
+  const [loadingName, setLoadingName] = useState(true);
+
+  useEffect(() => {
+    fetchTeacherName();
+    fetchSchoolName();
+  }, []);
+
+  const fetchTeacherName = async () => {
+    try {
+      // Get the currently logged-in user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        setTeacherName('Teacher');
+        return;
+      }
+
+      // Retrieve the teacher's full name from the profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Display the full name
+      if (profile?.full_name) {
+        setTeacherName(profile.full_name.trim());
+      } else {
+        setTeacherName('Teacher');
+      }
+
+    } catch (error) {
+      console.error('Error fetching teacher name:', error.message);
+      setTeacherName('Teacher');
+    } finally {
+      setLoadingName(false);
+    }
+  };
+
+  const fetchSchoolName = async () => {
+    try {
+      // Get the currently logged-in user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        setSchoolName('Learner');
+        return;
+      }
+
+      // Retrieve the school full name from the profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('school_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Display the full name
+      if (profile?.school_name) {
+        setSchoolName(profile.school_name.trim());
+      } else {
+        setSchoolName('School');
+      }
+
+    } catch (error) {
+      console.error('Error fetching school name:', error.message);
+      setSchoolName('School');
+    } finally {
+      setLoadingSchoolName(false);
+    }
+  };
+
+  const getGreeting = () => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour < 12) {
+      return 'Good morning';
+    } else if (currentHour < 18) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
@@ -86,7 +196,7 @@ export default function TeacherDashboardScreen({ navigation }) {
           {/* Greeting */}
           <View style={styles.greetingContainer}>
             <Text style={styles.greeting}>
-              Morning, Ms Dlamini
+              {getGreeting()}, {loadingName ? '...' : TeacherName}
             </Text>
           </View>
 
@@ -103,7 +213,7 @@ export default function TeacherDashboardScreen({ navigation }) {
             />
 
             <Text style={styles.classText}>
-              Grade 7A · Siyakhula Secondary
+              Grade 7A · {loadingSchoolName ? '...' : SchoolName}
             </Text>
 
             <Ionicons
