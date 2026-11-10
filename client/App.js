@@ -94,8 +94,8 @@ export default function App() {
             <Stack.Screen name="AccountPasswordSettings" component={AccountPasswordSettingsScreen} />
             <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
             <Stack.Screen name="HelpSupportSettings" component={HelpSupportSettingsScreen} />
-            
-            <Stack.Screen name="AdminDasboard" component={DashboardScreen}/>
+
+            <Stack.Screen name="AdminDasboard" component={AdminDashboardScreen}/>
           </Stack.Navigator>
         </NavigationContainer>
       </LanguageProvider>
