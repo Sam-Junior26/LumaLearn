@@ -14,7 +14,7 @@ export default function SplashScreen({ navigation }) {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.replace('TeacherDashboard');
+            navigation.replace('Welcome');
         }, 3000);
 
         return () => clearTimeout(timer);

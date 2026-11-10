@@ -27,6 +27,8 @@ export default function RegisterScreen({ navigation }) {
 
     const [role, setRole] = useState('Learner');
     const [fullName, setFullName] = useState('');
+    const [schoolName, setSchoolName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -55,6 +57,14 @@ export default function RegisterScreen({ navigation }) {
             return;
         }
 
+        // validate phone number
+        const phoneRegex = /^0[6-8][0-9]{8}$/;
+
+        if (!phoneRegex.test(phoneNumber)) {
+            setError('Please enter a valid 10-digit South African phone number.');
+            return;
+        }
+
         // Validate password.
         if (password.length < 8 || !/\d/.test(password)) {
             setError(
@@ -72,13 +82,13 @@ export default function RegisterScreen({ navigation }) {
         }
 
         // Users cannot assign themselves privileged roles.
-        if (role === 'Teacher') {
+        /*if (role === 'Teacher') {
             setError(
                 'Teacher accounts require administrator approval. ' +
                 'Please register as a learner or contact your administrator.'
             );
             return;
-        }
+        }*/
 
         try {
             setLoading(true);
@@ -92,7 +102,10 @@ export default function RegisterScreen({ navigation }) {
                     options: {
                         data: {
                             full_name: fullName.trim(),
+                            school_name: schoolName.trim(),
+                            phone_number: phoneNumber.trim(),
                             preferred_language: languageCode,
+                            role: role.toLocaleLowerCase()
                         },
                     },
                 });
@@ -117,6 +130,43 @@ export default function RegisterScreen({ navigation }) {
              *
              * from the user's authentication metadata.
              */
+
+            if (!data.session) {
+                Alert.alert(
+                    role === 'Teacher'
+                        ? 'Teacher Registration Submitted'
+                        : 'Registration Successful',
+
+                    role === 'Teacher'
+                        ? 'Your teacher account has been created and is awaiting administrator approval. Please confirm your email before logging in.'
+                        : 'Your learner account has been created. Please check your email to confirm your account.',
+
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => navigation.navigate('Login', {
+                                languageCode: languageCode,
+                            }),
+                        },
+                    ]
+                );
+
+                return;
+            }
+
+            if (role === 'Teacher') {
+                Alert.alert(
+                    'Registration Submitted',
+                    'Your teacher account is awaiting administrator approval.'
+                );
+
+                return;
+            }
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'TeacherDashboard' }],
+            });
 
             if (!data.session) {
                 // Email confirmation is enabled in Supabase.
@@ -253,6 +303,50 @@ export default function RegisterScreen({ navigation }) {
                         value={fullName}
                         onChangeText={setFullName}
                         autoCapitalize="words"
+                        autoCorrect={false}
+                    />
+                </View>
+
+                {/*School name*/}
+                <Text style={styles.label}>School name</Text>
+
+                <View style={styles.inputContainer}>
+                    <Ionicons
+                        name="school-outline"
+                        size={17}
+                        style={styles.inputIcon}
+                        color={'gray'}
+                    />
+
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter your school name"
+                        placeholderTextColor={colors.placeholder}
+                        value={schoolName}
+                        onChangeText={setSchoolName}
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                    />
+                </View>
+
+                {/*Phone number*/}
+                <Text style={styles.label}>Phone number</Text>
+
+                <View style={styles.inputContainer}>
+                    <Ionicons
+                        name="call-outline"
+                        size={17}
+                        color={'gray'}
+                        style={styles.inputIcon}
+                    />
+
+                    <TextInput
+                        style={styles.input}
+                        placeholder="+27"
+                        placeholderTextColor={colors.placeholder}
+                        value={phoneNumber}
+                        onChangeText={setPhoneNumber}
+                        keyboardType="phone-pad"
                         autoCorrect={false}
                     />
                 </View>
